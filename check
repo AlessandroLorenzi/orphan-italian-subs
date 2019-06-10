@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+
+import requests
+import datetime
+subs = open('to_check.txt')
+for sub in subs:
+  try:
+    sub = sub.strip()
+    page = requests.get("https://www.reddit.com/"+sub+"/new/.json", headers={"User-Agent": "Subreddit Stats"})
+    jpage = page.json()
+
+    if not page.ok:
+      print(sub ,"\t", jpage.get('message'), jpage.get('reason',''))
+      continue
+    latest_post = jpage['data']['children'][0]['data']['created']
+    latest_post = datetime.datetime.utcfromtimestamp(int(float(latest_post)))
+    age = datetime.datetime.now() - latest_post
+    if age.days > 365:
+      print(sub, "\t",latest_post)
+  except Exception as e:
+    print(sub, "\t", 'generic error on ', e)
